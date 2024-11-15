@@ -19,24 +19,19 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 [![R CMD Check](https://github.com/mikejohnson51/hydrofab/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/mikejohnson51/hydrofab/actions/workflows/R-CMD-check.yml)
 [![Dependencies](https://img.shields.io/badge/dependencies-18/71-red?style=flat)](#)
+[![License: Apache License (>= 2)](https://img.shields.io/badge/License-Apache%20License%20%28%3E%3D%202%29-blue.svg)](https://choosealicense.com/licenses/apache-2.0/)
 <!-- badges: end -->
 
-The goal of `hydrofab` is to provide consistent hydrologic and hydraulic network manipulation tool chains to achieve model application ready datasets from a consistent reference fabric. Some of these are being built at [ngen.hydrofab](https://github.com/mikejohnson51/ngen.hydrofab) and [gfv2.0](https://code.usgs.gov/wma/nhgf/gfv2.0)
-
+The goal of `hydrofab` is to provide consistent hydrologic and hydraulic network manipulation tool chains to achieve model application ready datasets.
 
 ## Installation
 
-You can install the development version of hydrofab like so:
+You can install the development version of `hydrofab` like so:
 
 ```{r eval = FALSE}
 install.packages("remotes")
-remotes::install_github("mikejohnson51/hydrofab")
+remotes::install_github("NOAA-OWP/hydrofab")
 ```
-
-
-## Introduction 
-
-This package is based around the same concepts as [nhdplusTools](https://usgs-r.github.io/nhdplusTools/) in an attempt to provide a common software stack for fabricating hydrofabrics.
 
 ### Refactoring and Aggregating
 
@@ -45,7 +40,6 @@ The concept of refactoring as intended here includes:
 1) **Splitting** large or long catchments to create a more uniform catchment size
 distribution,  
 2) **collapsing** catchment topology to eliminate small catchments
-
 
 The concept of aggregating as intended here includes **aggregating** catchments into groups based on existing network topology and defined criteria. Two primary use cases are offered:
 
@@ -61,9 +55,11 @@ much as possible for interoperability with other applications
 # knitr::include_graphics(c("man/figures/lynker-logo.png","man/figures/noaa-logo.png", 'man/figures/usgs-logo.png'))
 # library(cowplot)
 # xx = ggdraw() +
-#   draw_image("man/figures/usgs-logo.png", width = 0.33,   height = .25, y = .05) +
-#   draw_image("man/figures/noaa-logo.png", width = 0.33,   height = .35, x = 0.33) +
-#   draw_image("man/figures/lynker-logo.png", width = 0.33, height = .25, x = .66, y = .05) 
+#   draw_image("man/figures/lynker-logo.png", width = 0.33,   height = .25) +
+#   draw_image("man/figures/noaa-logo.png",   width = 0.33,   height = .35, x = 0.33) +
+#   draw_image("man/figures/usgs-logo.png",   width = 0.33,   height = .25, x = .66) 
+#  
+# xx
 # 
 # cowplot::save_plot(xx, filename = "man/figures/logos.png")
 ``` 
@@ -77,7 +73,6 @@ knitr::include_graphics("man/figures/logos.png")
 <a href = "mailto:mike.johnson@noaa.gov?subject=Nexgen Hydrofabric Questions">
 Mike Johnson</a> (NOAA Hydrofabric Lead)
  
-
 ## Disclaimer
 
 These data are preliminary or provisional and are subject to revision. They are being provided to meet the need for timely best science. The data have not received final approval by the National Oceanic and Atmospheric Administration (NOAA) or the U.S. Geological Survey (USGS) and are provided on the condition that neither NOAA, the USGS, nor the U.S. Government shall be held liable for any damages resulting from the authorized or unauthorized use of the data.

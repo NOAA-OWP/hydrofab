@@ -7,29 +7,23 @@
 
 [![R CMD
 Check](https://github.com/mikejohnson51/hydrofab/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/mikejohnson51/hydrofab/actions/workflows/R-CMD-check.yml)
-[![Dependencies](https://img.shields.io/badge/dependencies-21/80-red?style=flat)](#)
+[![Dependencies](https://img.shields.io/badge/dependencies-18/71-red?style=flat)](#)
+[![License: Apache License (\>=
+2)](https://img.shields.io/badge/License-Apache%20License%20%28%3E%3D%202%29-blue.svg)](https://choosealicense.com/licenses/apache-2.0/)
 <!-- badges: end -->
 
 The goal of `hydrofab` is to provide consistent hydrologic and hydraulic
 network manipulation tool chains to achieve model application ready
-datasets from a consistent reference fabric. Some of these are being
-built at [ngen.hydrofab](https://github.com/mikejohnson51/ngen.hydrofab)
-and [gfv2.0](https://code.usgs.gov/wma/nhgf/gfv2.0)
+datasets.
 
 ## Installation
 
-You can install the development version of hydrofab like so:
+You can install the development version of `hydrofab` like so:
 
 ``` r
 install.packages("remotes")
-remotes::install_github("mikejohnson51/hydrofab")
+remotes::install_github("NOAA-OWP/hydrofab")
 ```
-
-## Introduction
-
-This package is based around the same concepts as
-[nhdplusTools](https://usgs-r.github.io/nhdplusTools/) in an attempt to
-provide a common software stack for fabricating hydrofabrics.
 
 ### Refactoring and Aggregating
 
@@ -52,7 +46,7 @@ applications that need specific modeling unit characteristics but wish
 to preserve the network as much as possible for interoperability with
 other applications
 
-<img src="man/figures/logos.png" width="1800" style="display: block; margin: auto;" />
+<img src="man/figures/logos.png" width="1794" style="display: block; margin: auto;" />
 
 ## Questions:
 

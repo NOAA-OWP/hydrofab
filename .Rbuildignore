@@ -21,3 +21,4 @@ Dockerfile
 ^pkgdown$
 runners
 dead
+^LICENSE\.md$
