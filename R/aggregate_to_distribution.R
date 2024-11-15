@@ -41,7 +41,6 @@ aggregate_to_distribution = function(gpkg = NULL,
                                      overwrite = FALSE,
                                      cache = FALSE,
                                      verbose = TRUE) {
-  
   if (cache &  is.null(outfile)) {
     stop("cache cannot be written if outfile is NULL")
   }
@@ -74,36 +73,35 @@ aggregate_to_distribution = function(gpkg = NULL,
   network_list <- read_hydrofabric(gpkg,
                                    catchments = divide,
                                    flowpaths = flowpath,
-                                   crs = crs) |> 
-    prepare_network() |> 
+                                   crs = crs) |>
+    prepare_network() |>
     add_network_type(verbose = FALSE)
   
-  if(!"member_comid" %in% names(network_list$flowpaths)){
+  if (!"member_comid" %in% names(network_list$flowpaths)) {
     network_list$flowpaths$member_comid = network_list$flowpaths$id
   }
   
   # Add outlets
   if (!is.null(pois)) {
-    
     names(pois) = tolower(names(pois))
     
     bad = filter(pois, !id %in% network_list$flowpaths$id)
     
     outflows = pois %>%
-      st_drop_geometry() %>% 
+      st_drop_geometry() %>%
       select(poi_id, id)
-
-    network_list$flowpaths  = left_join(mutate(network_list$flowpaths, poi_id = NULL), 
-                                        st_drop_geometry(outflows), 
+    
+    network_list$flowpaths  = left_join(mutate(network_list$flowpaths, poi_id = NULL),
+                                        st_drop_geometry(outflows),
                                         by = 'id')
     
     unique(pois$poi_id) |> length()
     unique(network_list$flowpaths$poi_id) |> sort()
     
-    if(length(unique(pois$poi_id)) != length(unique(na.omit(network_list$flowpaths$poi_id)))){
-      warning("All POIs are not indexable: reference", call.  = FALSE )
+    if (length(unique(pois$poi_id)) != length(unique(na.omit(network_list$flowpaths$poi_id)))) {
+      warning("All POIs are not indexable: reference", call.  = FALSE)
     }
-   
+    
     
   } else {
     network_list$flowpaths$poi_id    = NA
@@ -116,15 +114,12 @@ aggregate_to_distribution = function(gpkg = NULL,
     tmp$base_catchments = network_list$catchments
     tmp$base_flowpaths = network_list$flowpaths
     
-    write_hydrofabric(tmp,
-                      cache_file,
-                      verbose, 
-                      enforce_dm = FALSE)
+    write_hydrofabric(tmp, cache_file, verbose, enforce_dm = FALSE)
     
     rm(tmp)
   }
   
-  main_agg =  
+  main_agg =
     aggregate_along_mainstems(
       network_list,
       ideal_size_sqkm,
@@ -132,10 +127,10 @@ aggregate_to_distribution = function(gpkg = NULL,
       min_length_km,
       verbose = verbose,
       cache_file = cache_file
-  ) 
+    )
   
-  if(length(unique(pois$poi_id)) != length(unique(na.omit(main_agg$flowpaths$poi_id)))){
-    warning("All POIs are not indexable: mainstem agg",call.  = FALSE )
+  if (length(unique(pois$poi_id)) != length(unique(na.omit(main_agg$flowpaths$poi_id)))) {
+    warning("All POIs are not indexable: mainstem agg", call.  = FALSE)
   }
   
   collapse_agg = collapse_headwaters2(
@@ -143,104 +138,128 @@ aggregate_to_distribution = function(gpkg = NULL,
     min_area_sqkm,
     min_length_km,
     verbose = verbose,
-    cache_file = cache_file)
+    cache_file = cache_file
+  )
   
-  collapse_agg$catchments = clean_geometry(collapse_agg$catchments, 
-                                           ID = "id", 
-                                           keep = NULL)
+  collapse_agg$catchments = clean_geometry(collapse_agg$catchments, ID = "id", keep = NULL)
   
-  if(length(unique(pois$poi_id)) != length(unique(na.omit(collapse_agg$flowpaths$poi_id)))){
-    warning("All POIs are not indexable: collapse", call.  = FALSE )
+  if (length(unique(pois$poi_id)) != length(unique(na.omit(collapse_agg$flowpaths$poi_id)))) {
+    warning("All POIs are not indexable: collapse", call.  = FALSE)
   }
   
   network_list = collapse_agg
   rm(collapse_agg)
   rm(main_agg)
-
-if(!is.null(pois)){
-  network_list$pois =  network_list$flowpaths %>% 
-    st_drop_geometry() %>%
-    select(id, poi_id) %>% 
-    mutate(poi_id = as.integer(poi_id)) |> 
-    filter(!is.na(poi_id)) %>%
-    left_join(select(pois, poi_id), by = "poi_id")
-} 
   
-  network_list$flowpaths = suppressWarnings({
-    hydroloom::add_streamorder(network_list$flowpaths) 
-  }) 
-  
-  network_list$flowpaths = 
-    select(network_list$flowpaths, 
-           id, toid, 
-           mainstem = levelpathid, 
-           order = stream_order, 
-           member_comid, 
-           poi_id, 
-           hydroseq, 
-           lengthkm, 
-           areasqkm, 
-           tot_drainage_areasqkm = tot_drainage_area, 
-           has_divide) %>% 
-    mutate(divide_id = ifelse(id %in% network_list$catchments$id, id, NA))
-  
-  if(length(unique(pois$poi_id)) != length(unique(na.omit(network_list$flowpaths$poi_id)))){
-    warning("All POIs are not indexable: final",call.  = FALSE )
+  if (!is.null(pois)) {
+    network_list$pois =  network_list$flowpaths %>%
+      st_drop_geometry() %>%
+      select(id, poi_id) %>%
+      mutate(poi_id = as.integer(poi_id)) |>
+      filter(!is.na(poi_id)) %>%
+      left_join(select(pois, poi_id), by = "poi_id")
   }
   
-  topo = st_drop_geometry(network_list$flowpaths) %>% 
+  network_list$flowpaths = suppressWarnings({
+    hydroloom::add_streamorder(network_list$flowpaths)
+  })
+  
+  network_list$flowpaths =
+    select(
+      network_list$flowpaths,
+      id,
+      toid,
+      flowline_id,
+      mainstem = levelpathid,
+      order = stream_order,
+      member_comid,
+      poi_id,
+      hydroseq,
+      lengthkm,
+      areasqkm,
+      tot_drainage_areasqkm = tot_drainage_area,
+      has_divide
+    ) %>%
+    mutate(divide_id = ifelse(id %in% network_list$catchments$id, id, NA))
+  
+  if (length(unique(pois$poi_id)) != length(unique(na.omit(network_list$flowpaths$poi_id)))) {
+    warning("All POIs are not indexable: final", call.  = FALSE)
+  }
+  
+  topo = st_drop_geometry(network_list$flowpaths) %>%
     select(divide_id, toid)
   
-  network_list$divides = select(network_list$catchments, id,  areasqkm) %>% 
-    mutate(divide_id = id, has_flowline = TRUE, ds_id = NA, type = "network") %>% 
+  network_list$divides = select(network_list$catchments, id, areasqkm) %>%
+    mutate(
+      divide_id = id,
+      has_flowline = TRUE,
+      ds_id = NA,
+      type = "network"
+    ) %>%
     left_join(topo, by = "divide_id")
   
   network_list$catchments = NULL
-
+  
   network_list$network  = st_drop_geometry(network_list$flowpaths) %>%
-   select(
-     id,
-     toid,
-     member  = member_comid,
-     divide_id,
-     any_of('poi_id'),
-     mainstem,
-     hydroseq,
-     order,
-     lengthkm, areasqkm,
-     tot_drainage_areasqkm) %>%
-   separate_longer_delim(col = 'member', delim = ",") %>%
-   mutate(hf_id_part = sapply( strsplit(member, "[.]"), FUN = function(x){ x[2] }),
-          hf_id_part = ifelse(is.na(hf_id_part), 1L, floor(as.numeric((hf_id_part)))),
-          hf_id = sapply( strsplit(member, "[.]"), FUN = function(x){ as.numeric(x[1]) }),
-          member = NULL,
-          hf_source = "NHDPlusV2"
-   ) %>%
-   left_join(st_drop_geometry(select(network_list$divides, divide_id, type, ds_id)), by = "divide_id") |> 
+    select(
+      id,
+      toid,
+      member  = member_comid,
+      flowline_id,
+      divide_id,
+      any_of('poi_id'),
+      mainstem,
+      hydroseq,
+      order,
+      lengthkm,
+      areasqkm,
+      tot_drainage_areasqkm
+    ) %>%
+    separate_longer_delim(col = 'member', delim = ",") %>%
+    mutate(
+      hf_id_part = sapply(
+        strsplit(member, "[.]"),
+        FUN = function(x) {
+          x[2]
+        }
+      ),
+      hf_id_part = ifelse(is.na(hf_id_part), 1L, floor(as.numeric((
+        hf_id_part
+      )))),
+      hf_id = sapply(
+        strsplit(member, "[.]"),
+        FUN = function(x) {
+          as.numeric(x[1])
+        }
+      ),
+      member = NULL,
+      hf_source = "NHDPlusV2"
+    ) %>%
+    left_join(st_drop_geometry(select(
+      network_list$divides, divide_id, type, ds_id
+    )), by = "divide_id") |>
     distinct()
   
-  if(length(unique(pois$poi_id)) != length(unique(na.omit(network_list$network$poi_id)))){
-    warning("All POIs are not indexable: network", call.  = FALSE )
+  if (length(unique(pois$poi_id)) != length(unique(na.omit(network_list$network$poi_id)))) {
+    warning("All POIs are not indexable: network", call.  = FALSE)
   }
   
-  if(!is.null(vpu)){
+  if (!is.null(vpu)) {
     network_list$network$vpu = vpu
   } else {
     network_list$network$vpu = NA
   }
-
- 
- if(!all(st_geometry_type(network_list$divides) == "POLYGON")){
-   warning("MULTIPOLYGONS FOUND VPU: ", vpu)
- }
-
-  if (!is.null(outfile)) {
   
-    outfile = write_hydrofabric(
-      network_list,
-      outfile,
-      verbose = verbose, 
-      enforce_dm = FALSE)
+  
+  if (!all(st_geometry_type(network_list$divides) == "POLYGON")) {
+    warning("MULTIPOLYGONS FOUND VPU: ", vpu)
+  }
+  
+  if (!is.null(outfile)) {
+    outfile = write_hydrofabric(network_list,
+                                outfile,
+                                verbose = verbose,
+                                enforce_dm = FALSE)
     
     return(outfile)
     

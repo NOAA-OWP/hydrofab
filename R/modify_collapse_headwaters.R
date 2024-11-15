@@ -36,12 +36,16 @@ build_headwater_collapse = function(network_list,
   df$hl1 = network_list$flowpaths$poi_id[match(df$id, network_list$flowpaths$id)]
   df$hl2 = network_list$flowpaths$poi_id[match(df$becomes, network_list$flowpaths$id)]
   
+  df$fl1 = network_list$flowpaths$flowline_id[match(df$id, network_list$flowpaths$id)]
+  df$fl2 = network_list$flowpaths$flowline_id[match(df$becomes, network_list$flowpaths$id)]
+  
   tmp = suppressWarnings({
     group_by(df, becomes) %>%
       mutate(member_comid = paste0(mC2[1], "," ,paste(mC1, collapse = ",")),
-             poi_id = as.numeric(paste(unique(na.omit(c(hl1, hl2))), collapse = ","))) %>%
+             poi_id = as.numeric(paste(unique(na.omit(c(hl1, hl2))), collapse = ",")),
+             fl_id = paste0(fl2[1], "," ,paste(fl1, collapse = ","))) %>%
       ungroup() %>%
-      select(-mC1, -mC2, -hl1, -hl2)
+      select(-mC1, -mC2, -hl1, -hl2, -fl1, -fl2)
   })
   
   
@@ -59,9 +63,14 @@ collapse_headwaters2 = function(network_list,
   
   hyaggregate_log("INFO", "\n--- Collapse Network Inward ---\n", verbose)
   
+  network_list$flowpaths =  network_list$flowpaths |> 
+    left_join(select(network_list$lookup, id, flowline_id), by = 'id')
+  
   start <- nrow(network_list$flowpaths)
   
-  mapping_table <- build_headwater_collapse(network_list, min_area_sqkm, min_length_km)
+  mapping_table <- build_headwater_collapse(network_list, 
+                                            min_area_sqkm, 
+                                            min_length_km)
   
   count = 0
   
@@ -74,6 +83,7 @@ collapse_headwaters2 = function(network_list,
     ind = match(mapping_table$becomes, network_list$flowpaths$id)
 
     network_list$flowpaths$member_comid[ind] = mapping_table$member_comid
+    network_list$flowpaths$flowline_id[ind] = mapping_table$fl_id
     
     fl = filter(network_list$flowpaths, !id %in% mapping_table$id)
     
@@ -90,7 +100,9 @@ collapse_headwaters2 = function(network_list,
     
     network_list  = prepare_network(network_list = list(flowpaths = fl, catchments = cat))
     
-    mapping_table = build_headwater_collapse(network_list, min_area_sqkm, min_length_km)
+    mapping_table = build_headwater_collapse(network_list, 
+                                             min_area_sqkm, 
+                                             min_length_km)
   }
   
   network_list = add_network_type(network_list, verbose)
@@ -100,7 +112,7 @@ collapse_headwaters2 = function(network_list,
   if (!is.null(cache_file)) {
     tmp = list()
     tmp$collapse_headwaters_catchments = network_list$catchments
-    tmp$collapse_headwaters_flowpaths = network_list$flowpaths
+    tmp$collapse_headwaters_flowpaths  = network_list$flowpaths
     
     write_hydrofabric(tmp,
                       cache_file,
