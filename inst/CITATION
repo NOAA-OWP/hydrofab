@@ -2,13 +2,13 @@ citHeader("To cite hydrofab in publications, please use:")
 
 bibentry(bibtype = "Manual",
          author = personList(
-           as.person("Mike Johnson")
+           as.person("J. Michael Johnson"),
            as.person("David Blodgett")
          ),
-         title = "hydrofab: Hydrologic Network Refactoring Tools Based on HY_Features",
+         title = "hydrofab: Hydrologic Geoprocessing Tools",
          publisher = "NOAA",
          address="",
-         version = "0.5.3",
+         version = "0.6",
          institution = "U.S. NOAA",
          year = 2024,
          url = "https://github.com/NOAA-OWP/hydrofab",
