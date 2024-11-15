@@ -11,7 +11,7 @@ Authors@R: c(person(given = "Mike", family = "Johnson",
                     email = "dblodgett@usgs.gov"))
 Description: A collection of tools for manipulating hydrologic and hydraulic networks 
 URL: https://github.com/NOAA-OWP/hydrofab
-BugReports: https://github.com/mikejohnson51/NOAA-OWP/issues
+BugReports: https://github.com/NOAA-OWP/hydrofab/issues
 Depends: 
     R (>= 3.5.0)
 Imports: 
@@ -39,8 +39,8 @@ Imports:
 Suggests: 
     testthat,
     knitr
-License: Apache License (>= 2)
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
