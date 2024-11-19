@@ -22,7 +22,20 @@ sb_id = function(type){
   return(id)
 }
 
+#' Rename simple features layer
+#' @inheritParams sf::st_write 
+#' @param new_layer new layer name
+#' @return dsn
+#' @export
 
+st_rename = function(dsn, layer, new_layer) {
+  read_sf(dsn, layer) |>
+    write_sf(dsn, new_layer)
+  
+  st_delete(dsn, layer)
+  
+  dsn
+}
 
 #' Check if a geopackage and layer exists
 #' This function checks if a layer exists in a geopackage
