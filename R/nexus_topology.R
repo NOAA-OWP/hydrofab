@@ -423,6 +423,8 @@ realign_topology = function(network_list,
 #' @export
 
 apply_nexus_topology = function(gpkg,
+                                catchments = NULL,
+                                flowpaths = NULL,
                                 vpu = NA,
                                 nexus_prefix = "nex-",
                                 terminal_nexus_prefix = "tnx-",
@@ -438,7 +440,10 @@ apply_nexus_topology = function(gpkg,
   
   hyaggregate_log("INFO", "\n--- Applying HY_feature topology ---\n", verbose)
   
-  network_list = read_hydrofabric(gpkg, verbose = verbose)
+  network_list = read_hydrofabric(gpkg, 
+                                  catchments = catchments,
+                                  flowpaths = flowpaths,
+                                  verbose = verbose)
   
   ngen_flows   = realign_topology(network_list,
                                   nexus_prefix          = nexus_prefix,
@@ -568,8 +573,10 @@ apply_nexus_topology = function(gpkg,
   baddies = filter(ngen_flows$nexus, !id %in% ngen_flows$divides$toid) %>%
     filter(toid != "wb-0")
   
-  write_sf(baddies, export_gpkg, "error")
-  
+  if(!is.null(export_gpkg)){
+    write_sf(baddies, export_gpkg, "error")
+  }
+ 
   if(nrow(baddies) > 0){
     message("Foiled again ... ID/toIDs: \n\t",
             paste(paste0(baddies$id, "-->", baddies$toid), collapse = "\n\t"))
