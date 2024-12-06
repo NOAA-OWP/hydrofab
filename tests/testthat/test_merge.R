@@ -105,13 +105,14 @@ test_that("assign global identifiers aggregated", {
   in1 <- read_hydrofabric(agg_gpkg_1, verbose = FALSE)
   in2 <- read_hydrofabric(agg_gpkg_2, verbose = FALSE)
   
-  out <- assign_global_identifiers(c(agg_gpkg_1, agg_gpkg_2), 
-                                   flowpath_layer = "flowpath", 
-                                   divide_layer = "divides", 
-                                   mapped_POI_layer = "mapped_POIs", 
-                                   lookup_table_layer = "lookup_table", 
-                                   flowpath_edge_list = "catchment_network", 
-                                   overwrite = TRUE, verbose = FALSE)
+  out <- assign_global_identifiers(gpkgs = c(agg_gpkg_1, agg_gpkg_2), 
+                                   #flowpath_layer = "flowpath", 
+                                   #divide_layer = "divides", 
+                                   #mapped_POI_layer = "mapped_POIs", 
+                                   #lookup_table_layer = "lookup_table", 
+                                   #flowpath_edge_list = "catchment_network", 
+                                   overwrite = TRUE, 
+                                   verbose = FALSE)
   
   expect_equal(seq((nrow(in1$flowpaths) + nrow(in2$flowpaths))), out$lookup$newID)
   

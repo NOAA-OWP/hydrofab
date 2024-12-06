@@ -1,3 +1,28 @@
+#' Add small area to crosswalk
+#' @param crosswalk an existing crosswalk table
+#' @param comid the shared ID
+#' @return data.frame
+#' @importFrom rlang `:=`
+#' @export
+
+add_areasqkm_to_crosswalk = function(crosswalk, comid = "hf_id"){
+  get_vaa('areasqkm') %>% 
+    select(s_areasqkm = areasqkm, !!comid := comid) %>% 
+    right_join(crosswalk, by = eval(comid)) 
+}
+
+
+#' @title Add Prefixes to Topological Data
+#' @description This function adds specified prefixes to the `id` and `toid` columns of a topological data frame based on the type of topology and its context (e.g., network or nexus).
+#' @param topo A data frame containing topological data. Must include columns `topo_type`, `type`, `id`, and `toid`.
+#' @param hf_prefix A character string to prefix `id` values in rows where `topo_type == "network"`. Default is `"cat-"`.
+#' @param nexus_prefix A character string to prefix `toid` values in rows where `type` does not match specific cases (`terminal`, `coastal`, or `internal`). Default is `"nex-"`.
+#' @param terminal_nexus_prefix A character string to prefix `toid` values where `type == "terminal"`. Default is `"tnx-"`.
+#' @param coastal_nexus_prefix A character string to prefix `toid` values where `type == "coastal"`. Default is `"cnx-"`.
+#' @param internal_nexus_prefix A character string to prefix `toid` values where `type == "internal"`. Default is `"inx-"`.
+#' @return A data frame with updated `id` and `toid` values, including appropriate prefixes based on the type of topology and the `type` column. The resulting data frame contains the columns `id`, `toid`, `type`, and any additional columns with names containing `"vpu"`.
+#' @export
+
 add_prefix = function(topo,
                       hf_prefix = "cat-",
                       nexus_prefix = "nex-",
@@ -33,7 +58,15 @@ add_prefix = function(topo,
   
 }
 
-
+#' @title Remove Prefixes from Columns
+#' @description This function removes prefixes from specified columns in a data frame by extracting the numeric portion of the values after the last `-` character.
+#' @param input A data frame containing the columns to be processed.
+#' @param col A character vector specifying the names of the columns from which to remove prefixes.
+#' @return The input data frame with the specified columns updated. The values in these columns are converted to numeric, retaining only the portion after the last `-` character.
+#' @details 
+#' - The function processes each specified column by removing the prefix up to and including the last `-` character using a regular expression.
+#' - The updated columns are converted to numeric values.
+#' @export
 
 flush_prefix	 = function (input, col) {
   for (i in col) {
@@ -41,6 +74,23 @@ flush_prefix	 = function (input, col) {
   }
   input
 }
+
+#' @title Add Non-Network Nexus Locations
+#' @description This function generates spatial points for non-network nexus locations (coastal and internal) based on the provided divides. It assigns unique identifiers and links them to waterbody identifiers.
+#' @param divides A spatial data frame (e.g., `sf` object) containing polygons representing divides. Must include columns `type`, `divide_id`, and `toid`.
+#' @param coastal_nexus_prefix A character string to prefix `divide_id` values for coastal nexus locations. Default is `"cnx-"`.
+#' @param internal_nexus_prefix A character string to prefix `divide_id` values for internal nexus locations. Default is `"inx-"`.
+#' @param waterbody_prefix A character string to prefix `toid` values for non-network nexus locations. Default is `"wb-"`.
+#' @return A spatial data frame (e.g., `sf` object) containing the non-network nexus locations. The resulting data frame includes the columns:
+#' - `id`: Unique identifier for each nexus location (prefixed with `coastal_nexus_prefix` or `internal_nexus_prefix`).
+#' - `toid`: Linked waterbody identifier (prefixed with `waterbody_prefix`).
+#' - `type`: The type of nexus (`coastal` or `internal`).
+#' - `geometry`: The spatial location of each nexus.
+#' @details
+#' - For each divide of type `coastal` or `internal`, the function calculates a representative point using `st_point_on_surface`.
+#' - Prefixes are applied to `divide_id` and `toid` values using `flush_prefix` and `mutate`.
+#' - The output retains only the columns `id`, `toid`, `type`, and geometry.
+#' @export
 
 add_nonnetwork_nexus_location  = function(divides,
                                           coastal_nexus_prefix = "cnx-",
@@ -69,7 +119,7 @@ add_nonnetwork_nexus_location  = function(divides,
 }
 
 
-#' Realign Topology to a nexus network
+#' @title Realign Topology to a nexus network
 #' @param network_list          list containing flowpath and catchment `sf` objects
 #' @param nexus_prefix          character prefix for nexus IDs
 #' @param terminal_nexus_prefix character prefix for terminal nexus IDs
@@ -82,12 +132,6 @@ add_nonnetwork_nexus_location  = function(divides,
 #' @importFrom  dplyr select mutate left_join bind_rows group_by mutate ungroup filter distinct bind_rows slice_max rename case_when
 #' @importFrom  nhdplusTools rename_geometry get_node
 #' @importFrom  sf st_drop_geometry st_intersects st_as_sf
-# 
-# filter(network_list$flowpaths, id == 3548) %>% 
-#   mutate(l = add_lengthkm(.)) |> 
-#   mapview::mapview()
-# 
-# filter(topo, id == 3548)
 
 realign_topology = function(network_list,
                             nexus_prefix = NULL,
@@ -104,7 +148,7 @@ realign_topology = function(network_list,
     st_drop_geometry() 
   
   if(is.null(term_filter)){
-  
+    
     if(is.null(term_add)){
       term_net = filter(net, toid == 0 )
     } else {
@@ -136,10 +180,10 @@ realign_topology = function(network_list,
   
   # Get all start and end node geometries
   starts_ends = bind_rows(get_node(iso, "start"), get_node(iso, "end"))
- # write_sf(starts_ends, "test.gpkg")
+  # write_sf(starts_ends, "test.gpkg")
   # Find the locations where the end points intersect with starting/ending points
   emap     = st_intersects(ends, starts_ends)
-
+  
   # If more then one intersection occurs its a nexus,
   #  otherwise it is a junction
   ends$type = ifelse(lengths(emap) > 1, "nex", "jun")
@@ -273,7 +317,7 @@ realign_topology = function(network_list,
     mutate(topo_type = "network") |> 
     select(id, toid, topo_type, type) |> 
     distinct()
-
+  
   
   ## NEW!!! ##
   xx =  select(topo, toid, type) %>%
@@ -281,12 +325,12 @@ realign_topology = function(network_list,
     mutate(type = ifelse(any(type == 'terminal'), "terminal", type)) %>%
     slice(1) %>%
     ungroup()
-
+  
   topo = topo %>%
     mutate(type = NULL) %>%
     left_join(xx, by = "toid", multiple = "all") %>%
     filter(id != toid)
-
+  
   # We'll use the fl --> nex topo to modify the input flow network toIDs
   # Additionally we will add the NextGen required prefixes.
   fl =  left_join(select(network_list$flowpaths, -toid), 
@@ -298,7 +342,7 @@ realign_topology = function(network_list,
            toid = paste0(ifelse(type == "terminal", terminal_nexus_prefix, nexus_prefix), toid),
            realized_catchment = gsub(waterbody_prefix, catchment_prefix, id)) |> 
     filter(!duplicated(id))
-
+  
   
   
   divide =  left_join(select(network_list$catchments, -toid),
@@ -368,15 +412,15 @@ realign_topology = function(network_list,
       distinct()
   })
   
-
+  
   
   if(sum(!divide$toid %in% nex$id) != 0){
     stop('Divides flow to nexus locations that do not exist!\n',
          paste(st_drop_geometry(divide[which(!divide$toid %in% nex$id),"divide_id"]),"-->", st_drop_geometry(divide[which(!divide$toid %in% nex$id),"toid"]), "\n"), call. = FALSE)
   }
   
- filter(divide, divide_id == 'cat-212673')
- filter(divide, divide_id == 'cat-212675')
+  filter(divide, divide_id == 'cat-212673')
+  filter(divide, divide_id == 'cat-212675')
   
   if(sum(!fl$toid %in% nex$id) != 0 ){
     stop('Flowpaths flow to nexus locations that do not exist!\n',
@@ -418,9 +462,9 @@ realign_topology = function(network_list,
 #' @param enforce_dm            should the data model be validated prior to writing?
 #' @param export_gpkg           file path to write new data. If NULL list object is returned
 #' @return list or file path
+#' @export
 #' @importFrom sf read_sf st_point_on_surface
 #' @importFrom dplyr select mutate left_join everything distinct contains slice n
-#' @export
 
 apply_nexus_topology = function(gpkg,
                                 catchments = NULL,
@@ -481,7 +525,7 @@ apply_nexus_topology = function(gpkg,
   
   
   if(layer_exists(gpkg, "pois")){
-      
+    
     x = read_sf(gpkg, "pois") |>
       select(poi_id) |> 
       mutate(poi_id = as.integer(poi_id)) 
@@ -517,7 +561,7 @@ apply_nexus_topology = function(gpkg,
     t = st_drop_geometry(ngen_flows$pois) |> 
       select(id, poi_id) |> 
       distinct()
-      
+    
     network = left_join(network, t, by = "id", relationship = "many-to-many")
   }
   
@@ -539,7 +583,7 @@ apply_nexus_topology = function(gpkg,
       left_join(select(tmp, -id), by = 'divide_id') %>%
       mutate(vpuid = as.character(vpu),
              poi_id = as.integer(poi_id))
-      
+    
     
     ngen_flows$network  = filter(network, !type %in% c(c('coastal', "internal"))) %>%
       left_join(select(tmp, id, hf_source, hf_id, hf_id_part, hydroseq), by = 'id', relationship = "many-to-many") %>%
@@ -576,7 +620,7 @@ apply_nexus_topology = function(gpkg,
   if(!is.null(export_gpkg)){
     write_sf(baddies, export_gpkg, "error")
   }
- 
+  
   if(nrow(baddies) > 0){
     message("Foiled again ... ID/toIDs: \n\t",
             paste(paste0(baddies$id, "-->", baddies$toid), collapse = "\n\t"))

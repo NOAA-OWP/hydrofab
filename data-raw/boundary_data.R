@@ -37,9 +37,8 @@ rpu = get_vaa(c("rpuid", "vpuid")) |>
   ms_simplify(keep = .001)
 
 ######## ----
-usethis::use_data(rpu_boundaries, overwrite =TRUE)
+usethis::use_data(rpu_boundaries, overwrite = TRUE)
 ######## ----
-
 
 files = list.files("data", recursive = TRUE, full.names = TRUE)
 bad_files = files[!grepl(".rda$", files)]

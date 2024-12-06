@@ -1,7 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 LICENSE
-.travis.yml
 .lintr
 inst/doc/*.html
 docs
@@ -19,6 +18,9 @@ Dockerfile
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-runners
-dead
 ^LICENSE\.md$
+^data/raw-data$
+^data/derived-data$
+^outputs$
+^figures$
+^analyses$

@@ -1,8 +1,6 @@
 
 library(hexSticker)
 
-
-
 imgurl <- "inst/figures/logo.png"
 library(showtext)
 font_add_google("Gochi Hand", "gochi")

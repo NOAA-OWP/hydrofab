@@ -19,6 +19,7 @@ Imports:
     dplyr,
     glue,
     httr,
+    hydroloom,
     igraph,
     logger,
     lwgeom,
@@ -30,6 +31,7 @@ Imports:
     rmapshaper,
     rvest,
     sf,
+    stats,
     terra,
     tibble,
     tidyr,
@@ -37,8 +39,7 @@ Imports:
     utils,
     yyjsonr
 Suggests: 
-    testthat,
-    knitr
+    testthat
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
